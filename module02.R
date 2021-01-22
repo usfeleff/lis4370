@@ -17,3 +17,6 @@ assignment2 <- c(16, 18, 14, 22, 27, 17, 19, 17, 17, 22, 20, 22)
  # Test the new function
  # (the mean of the test vector is 19.25)
  myNewMean(assignment2)
+
+ # for further commentary please see
+ # https://thestorythusr.wordpress.com/2021/01/22/module-02-a-basic-function/
