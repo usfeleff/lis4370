@@ -30,7 +30,7 @@ Here is a clarification hint:
 ---
 
 ```{r setup, message = FALSE}
-library(ggplot2)
+
 ```
 
 ```{r, "Data"}
@@ -47,9 +47,24 @@ myFrame <- as.data.frame(dataMatrix)
 # add our column names
 colnames(myFrame) <- c("Frequency", "BP", "First", "Second", "Decision")
 
-# convert to numerics to make graphing possible
+# And evaluate/convert our decisions bad/good, high/low to 0s and 1s
+# there are at least a dozen better ways to do this, but it demonstrates
+# both a function and an rm.na and I am exhausted
+
+evalDecision<- function(dfCol) {
+  dfCol <- stringr::str_replace_all(dfCol,c("bad" = "0", "good"="1", "low" = "0", "high" = "1", "NA" = NA))
+  dfCol <- as.numeric(dfCol, rm.na = TRUE)
+  return(dfCol)
+}
+
+myFrame$FirstBinary <- evalDecision(myFrame$First)
+myFrame$SecondBinary <- evalDecision(myFrame$Second)
+myFrame$DecisionBinary <- evalDecision(myFrame$Decision)
+
+# convert Frequncy and BP to numerics
 myFrame$Frequency <- as.numeric(myFrame$Frequency)
 myFrame$BP <- as.numeric(myFrame$BP)
+
 
 str(myFrame)
 ```
@@ -59,28 +74,23 @@ In the following examples, I used different data containers for the boxplot and 
 1. Boxplot 
 
 ```{r, "1. Boxplot"}
-# we are "faking" an x to get a boxplot of 1 dimension from r
+#png("~/Desktop/b1.png")
+boxplot(BP ~ FirstBinary, data = myFrame)
+dev.off()
 
-ggplot(myFrame, aes(x="", y=BP)) + 
-  geom_boxplot(fill='red', colour='black') +
-  labs(title = "BP range", x="Blood Pressure") +
-  theme_grey()
+#png("~/Desktop/b2.png")
+boxplot(BP ~ SecondBinary, data = myFrame)
+dev.off()
 
-# ggplot(myFrame, aes(x="")) + 
-#   geom_boxplot(data = myFrame, aes(y=Frequency)) +
-#   labs(title = "Frequency of Hospital Visits", x="Visits") +
-#   theme_grey()
-
-
-
-
+#png("~/Desktop/b3.png")
+boxplot(BP ~ DecisionBinary, data = myFrame)
+dev.off()
 ```
 
 ```{r, "2. Histogram"}
-ggplot(myFrame, aes(x=Frequency)) +
-  geom_histogram(bins=10, color='black', fill='white')
-
-
+#png("~/Desktop/h1.png")
+hist(myFrame$BP)
+dev.off
 
 ```
 
