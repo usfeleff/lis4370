@@ -1,0 +1,91 @@
+---
+title: 'Week 4: Lab - Map Data and Visualization'
+author: 'Brandon Eleff'
+date: '2021-02-07'
+output: html_document
+---
+
+---
+Your assignment:
+  The following data was collected by the local hospital. This data set contains 5 variables based on the observation of 10 patients. In addition to the measurements of the patients checking in to the hospital that night, this data provides the patients' histories regarding the frequency of their visits to the hospital in the last 12 months.
+This data displays the measurement of blood pressure, first assessment by a general doctor (bad=1, good =0) titled "first," the second assessment by an external doctor (called "second"), and the last row provides the head of the emergency unit's decision regarding immediate care for the patient based on the values 0 or 1 (low = 0, high =1).
+The names of your variables are as follows: "Freq","bloodp","first”, " second”, ”finaldecision”
+The rows
+1.    "0.6","103","bad","low","low”
+2.     "0.3","87","bad","low","high”
+3.     "0.4","32","bad","high","low”
+4.      "0.4","42","bad","high","high"
+5.     "0.2","59","good","low","low”
+6.      "0.6","109","good","low","high”
+7.     "0.3","78","good","high","low”
+8.      "0.4","205","good","high","high”
+9.      "0.9","135",”NA","high","high"
+10.    "0.2","176",”bad","high","high”
+Here is a clarification hint:
+  Frequency <- c(0.6,0.3,0.4,......
+                 BP <- c(103,87,32,42,.....
+                         First <- c(1,1,1,.....
+                                    Second <- c(0,0,1,1,...
+                                                FinalDecision <- c(0,1,0,1,...
+---
+
+```{r setup, message = FALSE}
+library(ggplot2)
+```
+
+```{r, "Data"}
+# We will just copy and paste the rows from above, and do some cleanup as we
+# build a dataframe
+rawData<-c("0.6","103","bad","low","low","0.3","87","bad","low","high","0.4","32","bad","high","low","0.4","42","bad","high","high","0.2","59","good","low","low","0.6","109","good","low","high","0.3","78","good","high","low","0.4","205","good","high","high","0.9","135","NA","high","high","0.2","176","bad","high","high")
+
+# punching it through a matrix and then into a dataframe will clean things up
+# quickly and easily. Yes, we could combine some of these lines.
+dataMatrix<-matrix(rawData, ncol=5, byrow =TRUE)
+
+myFrame <- as.data.frame(dataMatrix)
+
+# add our column names
+colnames(myFrame) <- c("Frequency", "BP", "First", "Second", "Decision")
+
+# convert to numerics to make graphing possible
+myFrame$Frequency <- as.numeric(myFrame$Frequency)
+myFrame$BP <- as.numeric(myFrame$BP)
+
+str(myFrame)
+```
+
+A. Your first assignment: Create a side-by-side boxplot (>boxplot(x, ...)) and and histogram (>hist(x,...)
+In the following examples, I used different data containers for the boxplot and histogram visual display. 
+1. Boxplot 
+
+```{r, "1. Boxplot"}
+# we are "faking" an x to get a boxplot of 1 dimension from r
+
+ggplot(myFrame, aes(x="", y=BP)) + 
+  geom_boxplot(fill='red', colour='black') +
+  labs(title = "BP range", x="Blood Pressure") +
+  theme_grey()
+
+# ggplot(myFrame, aes(x="")) + 
+#   geom_boxplot(data = myFrame, aes(y=Frequency)) +
+#   labs(title = "Frequency of Hospital Visits", x="Visits") +
+#   theme_grey()
+
+
+
+
+```
+
+```{r, "2. Histogram"}
+ggplot(myFrame, aes(x=Frequency)) +
+  geom_histogram(bins=10, color='black', fill='white')
+
+
+
+```
+
+B. Discuss the outcome of your results regarding patients BPs & MD’s Ratings.
+C. Post your result in your blog and code on GitHub. 
+
+blog post at: 
+https://thestorythusr.wordpress.com/2021/02/08/r-04-structure/
