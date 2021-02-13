@@ -1,0 +1,95 @@
+---
+title: 'Week 4: Lab - Map Data and Visualization'
+author: 'Brandon Eleff'
+date: '2021-02-07'
+output: html_document
+---
+
+Please see the discussion at https://thestorythusr.wordpress.com/2021/02/12/r-05-doing-math/
+
+```{r setup, message = FALSE}
+
+```
+
+A demonstration of basic matrix operators and methods
+
+```{r, "Basic Matrix Operations"}
+# create some sample matrices
+matrixA <- matrix(1:100, nrow = 10)
+matrixB <- matrix(1:1000, nrow = 10)
+matrixC <- matrix(c(1,2,3,4), nrow = 2)
+matrixD <- matrix(c(5,6,7,8), nrow = 2)
+
+
+# transpose
+matrixA
+t(matrixA)
+
+
+# matrix multiplication -- commented out to make the output reasonable
+# matrixA %*% matrixB
+
+# inverse
+solve(matrixC)
+
+# determinant
+det(matrixD)
+
+# scalar and vector multiplication
+2 * matrixA
+vectorA <- c(5,6,7,8)
+vectorA * matrixC
+
+```
+
+
+A simple example from game theory
+
+In the game 2 players (the column player, and the row player) each pick a number from 1 to 4 (this game works for any range, by the way) and the player who picked the smaller number wins unless their number is exactly 1 less than the other players. If they pick the same number it is a draw.
+
+We know that picking a lower number is good, so it would be silly to pick a 4. On the other hand the other player also knows picking lower numbers is good, so picking 1 all the time won't get us anywhere -- we need to mix it up a bit. We think it might be good to pick each number, 1-3 with a 1/3 probability, and we want to know what we can expect the payout to be long term...
+
+Note that the game is symmetric and (1/3, 1/3, 1/3, 0) is in fact optimal for both players.
+The upper left 3x3 if the matrix is exactly Rock-Paper-Scissors.
+
+```{r, "A Simple Game"}
+theGame<-matrix(c(0,1,-1,-1,-1,0,1,-1,1,-1,0,1,1,1,-1,0), nrow=4, byrow = TRUE)
+theGame
+
+randomStrat<-matrix( c(1/2,1/2,0,0), nrow = 4, byrow = TRUE)
+MASS::fractions(randomStrat)
+
+MASS::fractions(theGame %*% randomStrat)
+```
+
+
+A function to demonstrate an L2 regression
+(note that R has this built in as lsfit())
+```{r, "L2 Regression"}
+#L2 Regression
+# xBar = (aTranspose %*% a)^-1 %*% aTranspose %*% b
+
+l2Regression <- function(matrixA, matrixB) {
+aTranspose <- t(matrixA)
+xBar <- solve(aTranspose %*% matrixA) %*% aTranspose %*% matrixB
+
+return(xBar)
+}
+
+times <- c(1,2,3,5)
+readings <- c(2,4,9,10)
+
+timeMatrix <- matrix ( c(times,rep(1,length(times))), nrow = length(times))
+readingsMatrix <- matrix(readings, nrow = length(readings))
+
+# the solution is the slope and intercept of the line of best fit
+# for least
+solution<-l2Regression(timeMatrix, readingsMatrix)
+MASS::fractions(solution)
+
+plot(times,readings)
+abline(solution[2], solution[1])
+```
+
+
+
