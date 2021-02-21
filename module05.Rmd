@@ -1,6 +1,6 @@
 ---
-title: 'Week 4: Lab - Map Data and Visualization'
-author: 'Brandon Eleff'
+title: 'Week 5: Doing Math'
+author: 'usfeleff'
 date: '2021-02-07'
 output: html_document
 ---

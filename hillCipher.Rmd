@@ -1,0 +1,155 @@
+---
+title: "Hill Cipher"
+author: 'usfeleff'
+date: '2021-02-22'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("RConics") # only external package I used, and only for 1 thing
+# because I REALLY did not want to write it myself
+
+```
+
+Please see the discussion at https://thestorythusr.wordpress.com/2021/02/20/r-06-doing-math-pt-02/
+
+Many thanks to Interactive Maths' "Crypto Corner" which I used for
+reference when writing this code:
+https://crypto.interactive-maths.com/hill-cipher.html
+
+```{r}
+# note that decryption fails if
+# (1) the inverse of the matrix generated from the key = 0 
+# or (2) the determinant is not coprime to the length of the
+# alphabet being used.
+
+# ... And since 26 has 2 as a factor, this means most of the keys
+# I keep picking.
+
+# I could implement checks/warnings, but I am several hours past
+# what I wanted to spend on this
+
+cleantext <- function(theText) {
+  # converts everything to lowercase and chucks out
+  # any punctuation and spaces
+  theText <- tolower(theText)
+  theText <- gsub("[[:punct:][:blank:]]+", " ", theText)
+  theText <- gsub("[[:space:]]", "", theText)
+return(theText)
+}
+
+txt2Num <- function(theText) {
+  # converts each letter in the text to its position in the alphabet,
+  # with a = 0 because modulus 26 returns values 0 - 25, not 0 - 26
+  # this was written to key off lowercase text w/o punctuation or spaces
+  unlist(strsplit(theText,""))
+  utf8ToInt(theText) - utf8ToInt("b") + 1L
+}
+
+num2Txt <- function(theNums) {
+  # opposite of txt2Num, here I add 1 to shift a=0 to a=1 
+  # because that is how R wants it
+  letters[theNums+1]
+}
+
+keyMatrix <- function(keyPhrase) {
+  # takes the encryption key cleans the text, converts it to numbers
+  # then throws it into a matrix. Note that we are working with
+  # trigraphs so the matrix is 3x3, which means we only take the
+  # first 9 letters of the key, regardless of its length and 
+  # we pad it with 0s if it is too short
+  keyPhrase<-cleantext(keyPhrase)
+  keyPhrase<-txt2Num(keyPhrase)
+  
+  if (length(keyPhrase) < 9) {
+    keyPhrase <- append(keyPhrase, 0:(9-length(keyPhrase)))
+  }
+  
+  keyMatrix<-matrix(keyPhrase[1:9],nrow=3, byrow = TRUE)
+  return(keyMatrix)
+}
+
+modInvBrute <- function(m, n) {
+  # we need a modular multiplicative inverse (in this case of a determinant)
+  # which is the number by which we multiply m such that m mod n = 1
+  # we do this by brute force, there are various methods for this, but
+  # I couldn't find one in CRAN that was working properly and I by the
+  # time I got to this I just wanted to be done
+  # here is where the coprime issue mentioned above kicks in
+  # we'd have to discuss number theory but if the numbers are not
+  # coprime they don't have a multiplicative inverse and we will hit an
+  # infinite loop
+  guess <- 0
+  while (as.integer(round(m * guess ) %% n) != 1) { guess <- guess + 1 }
+  return(guess)
+}
+
+triGraph <- function(theMessage) {
+  # takes the message to be encrypted or decrypted, cleans it
+  # converts it into numbers and tosses it into a 3 x n matrix
+  # so that the matrix multiplication will work
+  theMessage<-cleantext(theMessage)
+  theMessage<-txt2Num(theMessage)
+  if (length(theMessage) %% 3 != 0) {
+    theMessage <- append(theMessage,seq(23,23,length.out = (length(theMessage) %% 3)+1))
+  }
+  return(matrix(theMessage, nrow=3))
+}
+
+codeGroup <- function(theTxt) {
+  # takes characters or stings, collapses them to a single string
+  # and then puts spaces every 5 characters because length 5 codegroups
+  # are tradition in classical cryptography
+  theTxt <- paste(theTxt, collapse = "")
+  theTxt <- gsub("(.{5})", "\\1 ", theTxt)
+  return(theTxt)
+}
+
+hillEncrypt <- function(theMessage, theKey) {
+  # encrypts a message, first line is the matrix mukltiplication
+  # which is what I wanted to demonstrate and how I got into
+  # this mess, after we get the encrypted message we modulo 26 
+  # so we can get it back to letters, and return it as an uppercase
+  # string split into groups of 5, because tradition
+  cipherTxt <- keyMatrix(theKey) %*% triGraph(theMessage)
+  cipherTxt <- cipherTxt %% 26
+  
+  cipherTxt <- toupper(num2Txt(cipherTxt))
+  cipherTxt <- codeGroup(cipherTxt)
+  
+  return(cipherTxt)
+}
+
+hillDecrypt <- function(cipherTxt, theKey) {
+  # decrypt: encoded message to trigraph and key to matrix
+  # as before, then we generate the inverse matrix from that
+  # which should be less lines, but %% behaves strangely 
+  # (which is also the reason for the round() for the %*%)
+  # note that: we are working %% 26 for everything and 
+  # have to do it at each step, and that here is the call to 
+  # modInvBrute () / the coprime issue (we can encrypt with
+  # something that is not coprime, but we can't decrypt)
+  # once we have the inverse a simple %*% (%% 26) returns
+  # the unencrypted message
+  cipherTxt <- triGraph(cipherTxt)
+
+  theKey <- keyMatrix(theKey) %% 26
+  
+  # adjoint returns the adjugate matrix, the function is from the RConics
+  # library and is the only non-base R I used
+  modInvDet <- modInvBrute(det(theKey) %% 26,26)
+  adjugateM <- adjoint(theKey) %% 26
+  inverseKey <- (modInvDet * adjugateM) %% 26
+  
+  plainTxt <- round(inverseKey %*% cipherTxt) %% 26
+  plainTxt <- num2Txt(plainTxt)
+  plainTxt <- codeGroup(plainTxt) 
+  return(plainTxt)
+}
+
+
+```
+```{R, "Encryption Demo"}
+
+```
