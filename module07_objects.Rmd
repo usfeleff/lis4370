@@ -1,0 +1,103 @@
+---
+title: 'Module 07: Objects'
+author: 'usfeleff'
+date: '2021-03-01'
+output: html_document
+---
+
+Please see the discussion at https://thestorythusr.wordpress.com/2021/03/01/r-objects/
+
+```{r setup, message = FALSE}
+library(quantmod)
+```
+Download any type of data (from the web or use datasets package) or create your own set. 
+
+Then, on the second step, determine if generic function as discussed in this module can be assigned to your data set, and if not, why? (Example, here is list of data set in R)
+data("mtcars")
+head (mtcars, 6)
+list(mtcars, 6)
+
+In third and last step, explore if S3 and S4 can be assigned to your data set.
+ 
+In your blog, discuss the following questions:
+
+How do you tell what OO system (S3 vs. S4) an object is associated with?
+
+How do you determine the base type (like integer or list) of an object?
+
+What is a generic function?
+
+What are the main differences between S3 and S4?
+
+In your GitHub, create two examples of S3 and S4.
+```{r, "Datasets"}
+# instance the built-in mtcars data set
+myCars <- mtcars
+
+# download stock data for apple (uses quantmod package), note the getSymbols()
+# function creates a variable, no need for an assignment operator
+getSymbols("AAPL", src="yahoo")
+
+# download price of gold
+getSymbols("XAU/USD",src="oanda")
+
+
+```
+
+
+
+```{r, "Generic Functions"}
+
+# run the generic plot function against the 3 datasets, notice the difference
+# in plot types
+plot(myCars)
+plot(AAPL)
+plot(XAUUSD)
+
+```
+
+
+```{r, "S3"}
+# Create the list object and specify its class
+s3Moto <- list(type="Motorcycle", make = "Honda", model_year= 2019, model = "CB300R", color = "black")
+class(s3Moto) <- "motorcycle"
+
+
+# view the object
+s3Moto
+
+# check the object type
+mode(s3Moto)
+isS4(s3Moto)
+```
+
+Notice that we cannot make an S4 object without first creating a class that
+describes that object.
+
+E.g., This line:
+s4Moto <- new("Motorcycle", make = "Honda", model_year= 2019, model = "CB300R", color = "black")
+
+Would fail with:
+Error in getClass(Class, where = topenv(parent.frame())) : 
+  “Motorcycle” is not a defined class
+
+If we tried to run it before the setClasss()
+```{r, "S4"}
+# create an S4 (formal) Class for a Motorcycle
+setClass("Motorcycle",
+         representation(
+           make ="character",
+           model_year="numeric",
+           model = "character",
+           color = "character"
+         )
+         )
+
+# create and view a particular motorcylce object
+s4Moto <- new("Motorcycle", make = "Honda", model_year= 2019, model = "CB300R", color = "black")
+
+s4Moto
+# check the object type
+mode(s4Moto)
+isS4(s4Moto)
+```
