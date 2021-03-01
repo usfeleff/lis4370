@@ -51,6 +51,7 @@ getSymbols("XAU/USD",src="oanda")
 # run the generic plot function against the 3 datasets, notice the difference
 # in plot types
 plot(myCars)
+plot(myCars$mpg ~ myCars$hp)
 plot(AAPL)
 plot(XAUUSD)
 
