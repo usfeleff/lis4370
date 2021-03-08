@@ -1,0 +1,72 @@
+---
+title: 'Module 08 | io strings plyr'
+author: 'usfeleff'
+date: '2021-03-07'
+output: html_document
+---
+```{r setup, message = FALSE}
+
+```
+
+```{r}
+# I don't want dplyr and plyr loaded at the same time, so I am going to
+# make sure dplyr isn't attached, I really should use an if statement here
+# detach("package:dplyr", unload=TRUE, character.only = TRUE)
+library(plyr)
+
+# set some filenames
+fileIn  <- "./data/module08_dataset.txt"
+fileOut <- "./data/module08_output.csv"
+
+# read in the assignment data
+sTable <- read.table(fileIn, header=TRUE, sep = ",")
+
+# calculate the Average Grade by gender and put everything into a new table
+sAvg <- ddply(sTable, "Sex", transform, Grade.Average=mean(Grade))
+
+sAvg
+
+# this is a cleaner way to do the calculation, using base R
+aggregate(sTable$Grade, by = list(sTable$Sex), mean)
+
+# create a dataframe of students whose name contain the letter "i"
+# we could use subset() from base R, but I prefer using conditions to 
+# filter indices directly -- with the imperative mindset it keeps me that
+# much closer to the data
+iFrame <- data.frame(sTable[grep("i", sTable$Name, ignore.case = TRUE),])
+
+iFrame
+
+# write to a comma seperated file
+write.csv(iFrame, fileOut)
+
+# and print that file back out to the console
+cat(paste0(readLines(fileOut), collapse="\n"))
+```
+
+```{r,"dplyr v plyr"}
+# you really do not want to have both plyr and dplyr loaded at the same time
+# detach("package:plyr", unload=TRUE, character.only = TRUE)
+
+library(dplyr)
+
+# the dplyr package (part of the tidyverse) allows us to chain together function
+# calls using %>% to pipe the output of one function directly into the next
+# personally, I find this easier to both write (since I am an old unix hand) and
+# write. Here are some examples doing a few of the same things as above.
+
+# this accomplishes the same thing as the creation of sAvg above
+sTable %>% group_by(Sex) %>% mutate(Grade.Average = mean(Grade))
+
+# this accomplises the same thing as the aggregate call above
+sTable %>% group_by(Sex) %>% summarise(mean=mean(Grade))
+
+# and here is a grep, notice I am using grepl here
+# one thing that is nice here is it reindexes, so a new csv
+# would be cleaner.
+sTable %>% filter(grepl('i', Name, ignore.case = TRUE))
+
+# readout the file, this one is not prettier
+readLines(fileOut) %>% paste0(collapse="\n") %>% cat
+```
+
