@@ -5,7 +5,7 @@ date: '2021-03-14'
 output: html_document
 ---
 
-Associated post is here: https://thestorythusr.wordpress.com/2021/03/07/r-i-o-strings-plyr/
+Associated post is here: https://thestorythusr.wordpress.com/2021/03/15/r-visualization/
 
 ```{r setup, message = FALSE}
 library(lattice)
@@ -47,7 +47,7 @@ xyplot(damaged ~ launch_temp | test_pressure,
 ```
 
 ```{r, "ggplot2"}
-ggplot(oRings, aes(x=launch_temp, y=damaged)) +
+ggplot(oRings, aes(x=launch_temp, y=damaged)) + theme_linedraw() +
   geom_point(aes(color=test_pressure)) +
   geom_smooth(method="lm", formula= y ~ x) +
   labs(title = "O-rings Damaged ~ Launch Temperature",
