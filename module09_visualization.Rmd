@@ -1,0 +1,61 @@
+---
+title: 'Module 09 | visualization'
+author: 'usfeleff'
+date: '2021-03-14'
+output: html_document
+---
+
+Associated post is here: https://thestorythusr.wordpress.com/2021/03/07/r-i-o-strings-plyr/
+
+```{r setup, message = FALSE}
+library(lattice)
+library(ggplot2)
+```
+Dataset Attributes are:
+1. Number of O-rings at risk on a given flight 
+2. Number experiencing thermal distress 
+3. Launch temperature (degrees F) 
+4. Leak-check pressure (psi) 
+5. Temporal order of flight
+
+
+```{r, "data load"}
+
+oRings<-read.table("./data/o-ring-erosion-only.data")
+dimensions <- c("at_risk", "damaged", "launch_temp", "test_pressure", "flight_order")
+
+colnames(oRings)<-dimensions
+
+oRings$test_pressure<-as.factor(oRings$test_pressure)
+```
+
+```{r,"base r scatterplot"}
+plot(oRings$damaged ~ oRings$launch_temp, 
+     xlab="Launch Temperature (ºF)", ylab="# damaged",
+  main="O-rings Damaged ~ Launch Temperature")
+abline(lm(oRings$damaged ~ oRings$launch_temp))
+```
+```{r,"scatterplots with lattice"}
+xyplot(damaged ~ launch_temp | test_pressure, 
+       group = test_pressure, 
+       data = oRings, 
+       type = c("p","r"),
+       main = "O-rings Damaged ~ Launch Temperature | Pressure",
+       xlab="Launch Temperature (ºF)", ylab="# damaged",
+       auto.key = list(title = "Test PSI", space = "right"))
+
+```
+
+```{r, "ggplot2"}
+ggplot(oRings, aes(x=launch_temp, y=damaged)) +
+  geom_point(aes(color=test_pressure)) +
+  geom_smooth(method="lm", formula= y ~ x) +
+  labs(title = "O-rings Damaged ~ Launch Temperature",
+       subtitle = "(L2 (least square) regression)",
+       x = "Launch Temperature (ºF)",
+       y = "# of O-Rings Damaged",
+       color = "Test Pressure (PSI)") +
+  scale_y_discrete(limits=c(0,1,2,3)) +
+  expand_limits(y=c(0,3))
+  
+```
